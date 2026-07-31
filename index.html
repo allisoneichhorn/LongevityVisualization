@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Work-Life Balance & Longevity Narrative</title>
     <!-- Allowed Libraries Only -->
-    <script src="https://cloudflare.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
@@ -212,6 +212,7 @@ function renderScene3(filteredData = data) {
        .attr("fill", d => d.gender === "Male" ? "#3d85c6" : "#c27ba0")
        .attr("opacity", 0.8)
        .style("cursor", "pointer")
+       // FIXED: Fully enclosed string formatting block with correct backticks and tags
        .on("mouseover", function(event, d) {
            tooltip.style("opacity", 1)
                   .html(`<strong>ID:</strong> ${d.id}<br/>
