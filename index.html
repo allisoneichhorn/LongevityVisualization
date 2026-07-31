@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Work-Life Balance & Longevity Narrative</title>
+    <!-- Allowed Libraries Only -->
     <script src="https://d3js.org"></script>
     <script src="https://rawgit.com"></script>
     <style>
@@ -42,6 +43,7 @@
 <div id="tooltip" class="tooltip"></div>
 
 <script>
+// Complete Dataset matching your exact schema
 const data = [
     {id: 1, gender: "Male", occupation_type: "Professional", avg_work_hours_per_day: 9.5, avg_sleep_hours_per_day: 6.2, age_at_death: 71},
     {id: 2, gender: "Female", occupation_type: "Manual", avg_work_hours_per_day: 11.0, avg_sleep_hours_per_day: 5.5, age_at_death: 64},
@@ -77,7 +79,7 @@ function drawCanvas() {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // X & Y SCALES (Y is globally fixed to age_at_death)
+    // Fixed Y Scale to maintain context across scenes
     const yScale = d3.scaleLinear()
         .domain([50, 90])
         .range([height, 0]);
@@ -186,7 +188,9 @@ function renderScene3(filteredData = data) {
 // TRIGGERS for changing views
 function changeScene(sceneNum) {
     currentScene = sceneNum;
-    d3.selectAll(".nav-btn").classList.remove("active");
+    d3.selectAll(".nav-btn").each(function() {
+        this.classList.remove("active");
+    });
     d3.select(`#btn${sceneNum}`).node().classList.add("active");
     
     if(sceneNum === 1) renderScene1();
@@ -196,7 +200,7 @@ function changeScene(sceneNum) {
 
 function updateExploration() {
     const selectedJob = d3.select("#occupationFilter").property("value");
-    const filtered = selectedJob === "All" ? data : data.filter(d => d.occupation_type === d3.select("#occupationFilter").property("value"));
+    const filtered = selectedJob === "All" ? data : data.filter(d => d.occupation_type === selectedJob);
     renderScene3(filtered);
 }
 
@@ -205,3 +209,4 @@ renderScene1();
 </script>
 </body>
 </html>
+
