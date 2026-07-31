@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Work-Life Balance & Longevity Narrative</title>
-    <!-- Allowed Libraries Only - Updated to ultra-reliable Cloudflare Mirror -->
-    <script src="https://cloudflare.com"></script>
+    <!-- Allowed Libraries Only - Hardcoded High-Speed Production Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
@@ -22,7 +22,7 @@
 
 <div id="container">
     <h1 style="margin-bottom: 5px;">Habits of a Lifetime</h1>
-    <p id="scene-description" style="color: #555; min-height: 45px;">Loading dataset from CSV...</p>
+    <p id="scene-description" style="color: #555; min-height: 45px;">Loading interactive dataset matrix from CSV...</p>
 
     <!-- Navigation Triggers -->
     <div style="margin-bottom: 20px;">
@@ -76,7 +76,7 @@ d3.csv("data.csv").then(function(loadedData) {
     renderScene1();
 }).catch(function(error) {
     d3.select("#scene-description")
-      .text("Error loading data.csv file. Make sure it is named exactly data.csv in your root repo folder.")
+      .text("Error reading data.csv file. Make sure data.csv is fully uploaded in your root folder with accurate columns.")
       .style("color", "red");
     console.error("CSV Loading Error: ", error);
 });
@@ -91,6 +91,7 @@ function drawCanvas() {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+    // Calculated array domain variables using absolute extents to prevent NaN rendering drops
     const yExtent = d3.extent(data, d => d.age_at_death);
     const yScale = d3.scaleLinear()
         .domain([yExtent[0] - 5, yExtent[1] + 5])
@@ -222,6 +223,7 @@ function changeScene(sceneNum) {
     d3.selectAll(".nav-btn").each(function() {
         this.classList.remove("active");
     });
+
     d3.select(`#btn${sceneNum}`).node().classList.add("active");
     
     if(sceneNum === 1) renderScene1();
