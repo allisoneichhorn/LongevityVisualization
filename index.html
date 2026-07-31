@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Work-Life Balance & Longevity Narrative</title>
-    <!-- Prevent standard tab icon 404 logs -->
     <link rel="icon" href="data:,">
-    <!-- Allowed Libraries Only - Enforces script loading execution rules -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
     <script src="https://cloudflare.com"></script>
     <style>
@@ -26,27 +24,23 @@
     <h1 style="margin-bottom: 5px;">Habits of a Lifetime</h1>
     <p id="scene-description" style="color: #555; min-height: 45px;">Loading interactive dataset matrix from CSV...</p>
 
-    <!-- Navigation Triggers -->
     <div style="margin-bottom: 20px;">
         <button class="nav-btn active" id="btn1" onclick="changeScene(1)">1. Work vs Lifespan</button>
         <button class="nav-btn" id="btn2" onclick="changeScene(2)">2. The Power of Sleep</button>
         <button class="nav-btn" id="btn3" onclick="changeScene(3)">3. Explore Your Data</button>
     </div>
 
-    <!-- Drill-Down Controls (Only visible in Scene 3) -->
     <div id="explore-controls" class="controls" style="margin-bottom: 15px;">
         <label style="font-weight: bold;">Filter Occupation: </label>
         <select id="occupationFilter" onchange="updateExploration()" style="padding: 5px; border-radius: 4px;"></select>
     </div>
 
-    <!-- The Visualization SVG -->
     <div id="chart"></div>
 </div>
 
 <div id="tooltip" class="tooltip"></div>
 
 <script>
-// PARAMETERS (Global Variables)
 let allData = []; 
 let data = [];    
 let currentScene = 1;
@@ -54,10 +48,8 @@ const margin = {top: 50, right: 50, bottom: 50, left: 60};
 const width = 800 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
-// TIMING PROTECTION: Enforces that scripts execute only after the library downloads are finalized
 document.addEventListener("DOMContentLoaded", function() {
     
-    // Load external CSV file asynchronously from repository root folder
     d3.csv("data.csv").then(function(loadedData) {
         allData = loadedData.map((d, index) => {
             const jitterValue = Math.sin(index) * 0.25; 
@@ -72,7 +64,6 @@ document.addEventListener("DOMContentLoaded", function() {
             };
         });
 
-        // FIXED SUBSET: Clean, static 20% sample allocation loop
         data = allData.filter((d, index) => index % 5 === 0);
 
         const occupations = ["All", ...new Set(allData.map(d => d.occupation_type))];
