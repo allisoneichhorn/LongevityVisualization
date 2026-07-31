@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Work-Life Balance & Longevity Narrative</title>
-    <!-- Allowed Libraries Only -->
-    <script src="https://d3js.org"></script>
+    <!-- Allowed Libraries Only - Updated to high-reliability jsDelivr CDN CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
@@ -80,9 +80,9 @@ function drawCanvas() {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // FIXED: Correct numerical domains passed directly to scale linear objects
+    // Dynamic numeric scaling boundaries for longevity axis
     const yScale = d3.scaleLinear()
-        .domain([50, 90])
+        .domain([60, 90])
         .range([height, 0]);
 
     svg.append("g").call(d3.axisLeft(yScale));
@@ -101,8 +101,7 @@ function renderScene1() {
     d3.select("#scene-description").text("Scene 1: Overworking heavily strains your longevity. Notice the downward trajectory as average daily work hours scale past 9 hours.");
     d3.select("#explore-controls").style("display", "none");
 
-    // FIXED: Clean domain configuration for x-axis scale bounds
-    const xScale = d3.scaleLinear().domain([5, 13]).range([0, width]);
+    const xScale = d3.scaleLinear().domain([5, 12]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
 
@@ -130,8 +129,7 @@ function renderScene2() {
     d3.select("#scene-description").text("Scene 2: Conversely, systemic biological rest repairs the body. Individuals hitting the 7 to 8-hour sleep sweet spot sustain optimized longevity.");
     d3.select("#explore-controls").style("display", "none");
 
-    // FIXED: Clean domain configuration for sleep data array bounds
-    const xScale = d3.scaleLinear().domain([4, 10]).range([0, width]);
+    const xScale = d3.scaleLinear().domain([5, 9]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
 
@@ -158,8 +156,7 @@ function renderScene3(filteredData = data) {
     d3.select("#scene-description").text("Scene 3: Free Exploration. Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
     d3.select("#explore-controls").style("display", "block");
 
-    // FIXED: Clean domain configurations
-    const xScale = d3.scaleLinear().domain([5, 13]).range([0, width]);
+    const xScale = d3.scaleLinear().domain([5, 12]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
 
