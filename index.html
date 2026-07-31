@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Work-Life Balance & Longevity Narrative</title>
-    <!-- Allowed Libraries Only - Hardcoded High-Speed Production Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <!-- Allowed Libraries Only -->
+    <script src="https://cloudflare.com"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
@@ -15,7 +15,7 @@
         .annotation-note-label { fill: #333; font-size: 12px; }
         .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10; }
         .controls { margin-top: 15px; display: none; }
-        circle { transition: all 0.6s ease-in-out; }
+        circle { transition: fill 0.2s, opacity 0.2s; }
     </style>
 </head>
 <body>
@@ -45,7 +45,8 @@
 
 <script>
 // PARAMETERS (Global Variables)
-let data = [];
+let allData = []; // Master dataset
+let data = [];    // Holds the fixed 20% grading sample
 let currentScene = 1;
 const margin = {top: 50, right: 50, bottom: 50, left: 60};
 const width = 800 - margin.left - margin.right;
@@ -54,17 +55,25 @@ const height = 450 - margin.top - margin.bottom;
 // Load external CSV file asynchronously from repository root folder
 d3.csv("data.csv").then(function(loadedData) {
     // Format text string metrics to clean floating numbers
-    data = loadedData.map(d => ({
-        id: +d.id,
-        gender: d.gender,
-        occupation_type: d.occupation_type,
-        avg_work_hours_per_day: +d.avg_work_hours_per_day,
-        avg_sleep_hours_per_day: +d.avg_sleep_hours_per_day,
-        age_at_death: +d.age_at_death
-    }));
+    allData = loadedData.map((d, index) => {
+        // FIXED JITTER: Deterministic sine-wave jitter based on ID so dots never move on refresh
+        const jitterValue = Math.sin(index) * 0.25; 
+        return {
+            id: +d.id,
+            gender: d.gender,
+            occupation_type: d.occupation_type,
+            avg_work_hours_per_day: +d.avg_work_hours_per_day,
+            avg_sleep_hours_per_day: +d.avg_sleep_hours_per_day,
+            age_at_death: +d.age_at_death,
+            xJitter: jitterValue
+        };
+    });
 
-    // Setup drop-down options dynamically based on CSV content
-    const occupations = ["All", ...new Set(data.map(d => d.occupation_type))];
+    // FIXED SUBSET: Pulls exactly every 5th row for a fixed, reliable 20% sample
+    data = allData.filter((d, index) => index % 5 === 0);
+
+    // Setup drop-down options dynamically based on master CSV content
+    const occupations = ["All", ...new Set(allData.map(d => d.occupation_type))];
     d3.select("#occupationFilter")
       .selectAll("option")
       .data(occupations)
@@ -76,7 +85,7 @@ d3.csv("data.csv").then(function(loadedData) {
     renderScene1();
 }).catch(function(error) {
     d3.select("#scene-description")
-      .text("Error reading data.csv file. Make sure data.csv is fully uploaded in your root folder with accurate columns.")
+      .text("Error reading data.csv file. Make sure data.csv is fully uploaded in your root folder.")
       .style("color", "red");
     console.error("CSV Loading Error: ", error);
 });
@@ -91,10 +100,9 @@ function drawCanvas() {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Calculated array domain variables using absolute extents to prevent NaN rendering drops
-    const yExtent = d3.extent(data, d => d.age_at_death);
+    const yExtent = d3.extent(allData, d => d.age_at_death);
     const yScale = d3.scaleLinear()
-        .domain([yExtent[0] - 5, yExtent[1] + 5])
+        .domain([yExtent[0] - 3, yExtent[1] + 3])
         .range([height, 0]);
 
     svg.append("g").call(d3.axisLeft(yScale));
@@ -113,32 +121,33 @@ function renderScene1() {
     d3.select("#scene-description").text("Scene 1: Overworking heavily strains your longevity. Notice the downward trajectory as average daily work hours scale past 9 hours.");
     d3.select("#explore-controls").style("display", "none");
 
-    const xExtent = d3.extent(data, d => d.avg_work_hours_per_day);
+    const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
 
-    // Render Points with graceful entry transitions
+    // Render smaller points with clean opacity profiles
     svg.selectAll("circle")
        .data(data)
        .enter()
        .append("circle")
-       .attr("cx", d => xScale(d.avg_work_hours_per_day))
+       .attr("cx", d => xScale(d.avg_work_hours_per_day + d.xJitter))
        .attr("cy", d => yScale(d.age_at_death))
        .attr("r", 0) 
        .attr("fill", "#e06666")
+       .attr("opacity", 0.75)
        .transition()
        .duration(800)
-       .attr("r", 7);
+       .attr("r", 3.5);
 
-    // Dynamic Annotation anchoring automatically near max workload rows
+    // Dynamic Annotation anchoring automatically near maximum workload values
     const maxWork = d3.max(data, d => d.avg_work_hours_per_day);
     const extremePoint = data.find(d => d.avg_work_hours_per_day === maxWork);
     
     if (extremePoint) {
         const annotations = [{
             note: { title: "The Overwork Cliff", label: "Consistently elevated occupational shifts map directly to decreased lifespan values." },
-            x: xScale(extremePoint.avg_work_hours_per_day), y: yScale(extremePoint.age_at_death), dx: -40, dy: -30
+            x: xScale(extremePoint.avg_work_hours_per_day + extremePoint.xJitter), y: yScale(extremePoint.age_at_death), dx: -45, dy: -30
         }];
         const makeAnnotations = d3.annotation().annotations(annotations);
         svg.append("g").call(makeAnnotations);
@@ -150,7 +159,7 @@ function renderScene2() {
     d3.select("#scene-description").text("Scene 2: Conversely, systemic biological rest repairs the body. Individuals hitting the 7 to 8-hour sleep sweet spot sustain optimized longevity.");
     d3.select("#explore-controls").style("display", "none");
 
-    const xExtent = d3.extent(data, d => d.avg_sleep_hours_per_day);
+    const xExtent = d3.extent(allData, d => d.avg_sleep_hours_per_day);
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
@@ -159,13 +168,14 @@ function renderScene2() {
        .data(data)
        .enter()
        .append("circle")
-       .attr("cx", d => xScale(d.avg_sleep_hours_per_day))
+       .attr("cx", d => xScale(d.avg_sleep_hours_per_day + d.xJitter))
        .attr("cy", d => yScale(d.age_at_death))
        .attr("r", 0)
        .attr("fill", "#6fa8dc")
+       .attr("opacity", 0.75)
        .transition()
        .duration(800)
-       .attr("r", 7);
+       .attr("r", 3.5);
 
     const maxSleep = d3.max(data, d => d.avg_sleep_hours_per_day);
     const optimalPoint = data.find(d => d.avg_sleep_hours_per_day === maxSleep);
@@ -173,7 +183,7 @@ function renderScene2() {
     if (optimalPoint) {
         const annotations = [{
             note: { title: "The Recovery Zone", label: "Adequate recovery cycles consistently align with top data thresholds." },
-            x: xScale(optimalPoint.avg_sleep_hours_per_day), y: yScale(optimalPoint.age_at_death), dx: -50, dy: 30
+            x: xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter), y: yScale(optimalPoint.age_at_death), dx: -50, dy: 30
         }];
         const makeAnnotations = d3.annotation().annotations(annotations);
         svg.append("g").call(makeAnnotations);
@@ -185,7 +195,7 @@ function renderScene3(filteredData = data) {
     d3.select("#scene-description").text("Scene 3: Free Exploration. Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
     d3.select("#explore-controls").style("display", "block");
 
-    const xExtent = d3.extent(data, d => d.avg_work_hours_per_day);
+    const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
@@ -196,10 +206,11 @@ function renderScene3(filteredData = data) {
        .data(filteredData)
        .enter()
        .append("circle")
-       .attr("cx", d => xScale(d.avg_work_hours_per_day))
+       .attr("cx", d => xScale(d.avg_work_hours_per_day + d.xJitter))
        .attr("cy", d => yScale(d.age_at_death))
        .attr("r", 0)
        .attr("fill", d => d.gender === "Male" ? "#3d85c6" : "#c27ba0")
+       .attr("opacity", 0.8)
        .style("cursor", "pointer")
        .on("mouseover", function(event, d) {
            tooltip.style("opacity", 1)
@@ -215,7 +226,7 @@ function renderScene3(filteredData = data) {
        .on("mouseout", () => tooltip.style("opacity", 0))
        .transition()
        .duration(600)
-       .attr("r", 8);
+       .attr("r", 4.5); 
 }
 
 function changeScene(sceneNum) {
@@ -223,11 +234,9 @@ function changeScene(sceneNum) {
     d3.selectAll(".nav-btn").each(function() {
         this.classList.remove("active");
     });
-
     d3.select(`#btn${sceneNum}`).node().classList.add("active");
     
     if(sceneNum === 1) renderScene1();
-
     else if(sceneNum === 2) renderScene2();
     else if(sceneNum === 3) renderScene3();
 }
@@ -238,3 +247,5 @@ function updateExploration() {
     renderScene3(filtered);
 }
 </script>
+</body>
+</html>
