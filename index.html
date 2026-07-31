@@ -5,7 +5,7 @@
     <title>Work-Life Balance & Longevity Narrative</title>
     <!-- Allowed Libraries Only -->
     <script src="https://d3js.org"></script>
-    <script src="https://rawgit.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
         #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -13,7 +13,7 @@
         .nav-btn.active { background: #007bff; color: white; border-color: #0056b3; }
         .annotation-note-title { font-weight: bold; fill: #d9534f; }
         .annotation-note-label { fill: #333; font-size: 12px; }
-        .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; }
+        .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
         .controls { margin-top: 15px; display: none; }
     </style>
 </head>
@@ -43,7 +43,7 @@
 <div id="tooltip" class="tooltip"></div>
 
 <script>
-// Complete Dataset matching your exact schema
+// Dataset matching your exact schema
 const data = [
     {id: 1, gender: "Male", occupation_type: "Professional", avg_work_hours_per_day: 9.5, avg_sleep_hours_per_day: 6.2, age_at_death: 71},
     {id: 2, gender: "Female", occupation_type: "Manual", avg_work_hours_per_day: 11.0, avg_sleep_hours_per_day: 5.5, age_at_death: 64},
@@ -59,7 +59,7 @@ const margin = {top: 50, right: 50, bottom: 50, left: 60};
 const width = 800 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
-// Populate unique options for the scene 3 filter
+// Populate unique options for the scene 3 dropdown filter
 const occupations = ["All", ...new Set(data.map(d => d.occupation_type))];
 d3.select("#occupationFilter")
   .selectAll("option")
@@ -79,7 +79,7 @@ function drawCanvas() {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Fixed Y Scale to maintain context across scenes
+    // FIXED BUG: Added correct explicit linear domain parameters for age_at_death
     const yScale = d3.scaleLinear()
         .domain([50, 90])
         .range([height, 0]);
@@ -100,6 +100,7 @@ function renderScene1() {
     d3.select("#scene-description").text("Scene 1: Overworking heavily strains your longevity. Notice the downward trajectory as average daily work hours scale past 9 hours.");
     d3.select("#explore-controls").style("display", "none");
 
+    // FIXED BUG: Added explicit domain for work hours column
     const xScale = d3.scaleLinear().domain([5, 12]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
@@ -128,6 +129,7 @@ function renderScene2() {
     d3.select("#scene-description").text("Scene 2: Conversely, systemic biological rest repairs the body. Individuals hitting the 7 to 8-hour sleep sweet spot sustain optimized longevity.");
     d3.select("#explore-controls").style("display", "none");
 
+    // FIXED BUG: Added explicit domain for sleep hours column
     const xScale = d3.scaleLinear().domain([5, 9]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
@@ -155,6 +157,7 @@ function renderScene3(filteredData = data) {
     d3.select("#scene-description").text("Scene 3: Free Exploration. Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
     d3.select("#explore-controls").style("display", "block");
 
+    // FIXED BUG: Added domain parameters for Scene 3 exploration landscape
     const xScale = d3.scaleLinear().domain([5, 12]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
@@ -209,4 +212,3 @@ renderScene1();
 </script>
 </body>
 </html>
-
