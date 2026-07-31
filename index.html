@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Work-Life Balance & Longevity Narrative</title>
+    <script src="https://d3js.org"></script>
+    <script src="https://rawgit.com"></script>
+    <style>
+        body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
+        #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
+        .nav-btn.active { background: #007bff; color: white; border-color: #0056b3; }
+        .annotation-note-title { font-weight: bold; fill: #d9534f; }
+        .annotation-note-label { fill: #333; font-size: 12px; }
+        .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; }
+        .controls { margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <h1 style="margin-bottom: 5px;">Habits of a Lifetime</h1>
+    <p id="scene-description" style="color: #555; min-height: 45px;"></p>
+
+    <!-- Navigation Triggers -->
+    <div style="margin-bottom: 20px;">
+        <button class="nav-btn active" id="btn1" onclick="changeScene(1)">1. Work vs Lifespan</button>
+        <button class="nav-btn" id="btn2" onclick="changeScene(2)">2. The Power of Sleep</button>
+        <button class="nav-btn" id="btn3" onclick="changeScene(3)">3. Explore Your Data</button>
+    </div>
+
+    <!-- Drill-Down Controls (Only visible in Scene 3) -->
+    <div id="explore-controls" class="controls">
+        <label>Filter Occupation: </label>
+        <select id="occupationFilter" onchange="updateExploration()"></select>
+    </div>
+
+    <!-- The Visualization SVG -->
+    <div id="chart"></div>
+</div>
+
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+const data = [
+    {id: 1, gender: "Male", occupation_type: "Professional", avg_work_hours_per_day: 9.5, avg_sleep_hours_per_day: 6.2, age_at_death: 71},
+    {id: 2, gender: "Female", occupation_type: "Manual", avg_work_hours_per_day: 11.0, avg_sleep_hours_per_day: 5.5, age_at_death: 64},
+    {id: 3, gender: "Female", occupation_type: "Professional", avg_work_hours_per_day: 7.0, avg_sleep_hours_per_day: 7.8, age_at_death: 83},
+    {id: 4, gender: "Male", occupation_type: "Sedentary", avg_work_hours_per_day: 8.0, avg_sleep_hours_per_day: 7.0, age_at_death: 76},
+    {id: 5, gender: "Female", occupation_type: "Professional", avg_work_hours_per_day: 10.5, avg_sleep_hours_per_day: 5.8, age_at_death: 68},
+    {id: 6, gender: "Male", occupation_type: "Manual", avg_work_hours_per_day: 6.5, avg_sleep_hours_per_day: 8.2, age_at_death: 85}
+];
+
+// PARAMETERS (State Variables)
+let currentScene = 1;
+const margin = {top: 50, right: 50, bottom: 50, left: 60};
+const width = 800 - margin.left - margin.right;
+const height = 450 - margin.top - margin.bottom;
+
+// Populate unique options for the scene 3 filter
+const occupations = ["All", ...new Set(data.map(d => d.occupation_type))];
+d3.select("#occupationFilter")
+  .selectAll("option")
+  .data(occupations)
+  .enter()
+  .append("option")
+  .text(d => d);
+
+function drawCanvas() {
+    // SCENE CLEARING
+    d3.select("#chart").html("");
+    
+    const svg = d3.select("#chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // X & Y SCALES (Y is globally fixed to age_at_death)
+    const yScale = d3.scaleLinear()
+        .domain([50, 90])
+        .range([height, 0]);
+
+    svg.append("g").call(d3.axisLeft(yScale));
+    svg.append("text")
+       .attr("transform", "rotate(-90)")
+       .attr("y", -45)
+       .attr("x", -height/2)
+       .style("text-anchor", "middle")
+       .text("Age at Death");
+
+    return { svg, yScale };
+}
+
+function renderScene1() {
+    const { svg, yScale } = drawCanvas();
+    d3.select("#scene-description").text("Scene 1: Overworking heavily strains your longevity. Notice the downward trajectory as average daily work hours scale past 9 hours.");
+    d3.select("#explore-controls").style("display", "none");
+
+    const xScale = d3.scaleLinear().domain([5, 12]).range([0, width]);
+    svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
+    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
+
+    // Render Points
+    svg.selectAll("circle")
+       .data(data)
+       .enter()
+       .append("circle")
+       .attr("cx", d => xScale(d.avg_work_hours_per_day))
+       .attr("cy", d => yScale(d.age_at_death))
+       .attr("r", 7)
+       .attr("fill", "#e06666");
+
+    // ANNOTATION
+    const annotations = [{
+        note: { title: "The Overwork Cliff", label: "Consistently working >10 hours displays a drastic drop-off in lifespan values." },
+        x: xScale(11.0), y: yScale(64), dx: -40, dy: -30
+    }];
+    const makeAnnotations = d3.annotation().annotations(annotations);
+    svg.append("g").call(makeAnnotations);
+}
+
+function renderScene2() {
+    const { svg, yScale } = drawCanvas();
+    d3.select("#scene-description").text("Scene 2: Conversely, systemic biological rest repairs the body. Individuals hitting the 7 to 8-hour sleep sweet spot sustain optimized longevity.");
+    d3.select("#explore-controls").style("display", "none");
+
+    const xScale = d3.scaleLinear().domain([5, 9]).range([0, width]);
+    svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
+    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
+
+    svg.selectAll("circle")
+       .data(data)
+       .enter()
+       .append("circle")
+       .attr("cx", d => xScale(d.avg_sleep_hours_per_day))
+       .attr("cy", d => yScale(d.age_at_death))
+       .attr("r", 7)
+       .attr("fill", "#6fa8dc");
+
+    // ANNOTATION
+    const annotations = [{
+        note: { title: "The Recovery Sweet Spot", label: "A healthy cluster of longevity peaks right around 8 hours of sleep." },
+        x: xScale(8.2), y: yScale(85), dx: -50, dy: 30
+    }];
+    const makeAnnotations = d3.annotation().annotations(annotations);
+    svg.append("g").call(makeAnnotations);
+}
+
+function renderScene3(filteredData = data) {
+    const { svg, yScale } = drawCanvas();
+    d3.select("#scene-description").text("Scene 3: Free Exploration. Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
+    d3.select("#explore-controls").style("display", "block");
+
+    const xScale = d3.scaleLinear().domain([5, 12]).range([0, width]);
+    svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
+    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
+
+    const tooltip = d3.select("#tooltip");
+
+    svg.selectAll("circle")
+       .data(filteredData)
+       .enter()
+       .append("circle")
+       .attr("cx", d => xScale(d.avg_work_hours_per_day))
+       .attr("cy", d => yScale(d.age_at_death))
+       .attr("r", 8)
+       .attr("fill", d => d.gender === "Male" ? "#3d85c6" : "#c27ba0")
+       .style("cursor", "pointer")
+       // TRIGGERS (Event Listeners)
+       .on("mouseover", function(event, d) {
+           tooltip.style("opacity", 1)
+                  .html(`<strong>ID:</strong> ${d.id}<br/>
+                         <strong>Gender:</strong> ${d.gender}<br/>
+                         <strong>Job:</strong> ${d.occupation_type}<br/>
+                         <strong>Work Hours:</strong> ${d.avg_work_hours_per_day}h<br/>
+                         <strong>Sleep Hours:</strong> ${d.avg_sleep_hours_per_day}h<br/>
+                         <strong>Age at Death:</strong> ${d.age_at_death}`)
+                  .style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 28) + "px");
+       })
+       .on("mouseout", () => tooltip.style("opacity", 0));
+}
+
+// TRIGGERS for changing views
+function changeScene(sceneNum) {
+    currentScene = sceneNum;
+    d3.selectAll(".nav-btn").classList.remove("active");
+    d3.select(`#btn${sceneNum}`).node().classList.add("active");
+    
+    if(sceneNum === 1) renderScene1();
+    else if(sceneNum === 2) renderScene2();
+    else if(sceneNum === 3) renderScene3();
+}
+
+function updateExploration() {
+    const selectedJob = d3.select("#occupationFilter").property("value");
+    const filtered = selectedJob === "All" ? data : data.filter(d => d.occupation_type === d3.select("#occupationFilter").property("value"));
+    renderScene3(filtered);
+}
+
+// Initializing the first view
+renderScene1();
+</script>
+</body>
+</html>
