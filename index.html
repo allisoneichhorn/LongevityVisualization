@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Work-Life Balance & Longevity Narrative</title>
-    <!-- Allowed Libraries Only -->
-    <script src="https://cloudflare.com"></script>
+    <!-- Prevent standard tab icon 404 logs -->
+    <link rel="icon" href="data:,">
+    <!-- Allowed Libraries Only - Enforces script loading execution rules -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
@@ -45,54 +47,54 @@
 
 <script>
 // PARAMETERS (Global Variables)
-let allData = []; // Master dataset
-let data = [];    // Holds the fixed 20% grading sample
+let allData = []; 
+let data = [];    
 let currentScene = 1;
 const margin = {top: 50, right: 50, bottom: 50, left: 60};
 const width = 800 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
-// Load external CSV file asynchronously from repository root folder
-d3.csv("data.csv").then(function(loadedData) {
-    // Format text string metrics to clean floating numbers
-    allData = loadedData.map((d, index) => {
-        const jitterValue = Math.sin(index) * 0.25; 
-        return {
-            id: +d.id,
-            gender: d.gender,
-            occupation_type: d.occupation_type,
-            avg_work_hours_per_day: +d.avg_work_hours_per_day,
-            avg_sleep_hours_per_day: +d.avg_sleep_hours_per_day,
-            age_at_death: +d.age_at_death,
-            xJitter: jitterValue
-        };
+// TIMING PROTECTION: Enforces that scripts execute only after the library downloads are finalized
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // Load external CSV file asynchronously from repository root folder
+    d3.csv("data.csv").then(function(loadedData) {
+        allData = loadedData.map((d, index) => {
+            const jitterValue = Math.sin(index) * 0.25; 
+            return {
+                id: +d.id,
+                gender: d.gender,
+                occupation_type: d.occupation_type,
+                avg_work_hours_per_day: +d.avg_work_hours_per_day,
+                avg_sleep_hours_per_day: +d.avg_sleep_hours_per_day,
+                age_at_death: +d.age_at_death,
+                xJitter: jitterValue
+            };
+        });
+
+        // FIXED SUBSET: Clean, static 20% sample allocation loop
+        data = allData.filter((d, index) => index % 5 === 0);
+
+        const occupations = ["All", ...new Set(allData.map(d => d.occupation_type))];
+        d3.select("#occupationFilter")
+          .selectAll("option")
+          .data(occupations)
+          .enter()
+          .append("option")
+          .text(d => d);
+
+        renderScene1();
+    }).catch(function(error) {
+        d3.select("#scene-description")
+          .text("Error reading data.csv file. Verify its location in your root folder layout.")
+          .style("color", "red");
+        console.error("CSV Loading Error: ", error);
     });
-
-    // FIXED SUBSET: Pulls exactly every 5th row for a fixed, reliable 20% sample
-    data = allData.filter((d, index) => index % 5 === 0);
-
-    // Setup drop-down options dynamically based on master CSV content
-    const occupations = ["All", ...new Set(allData.map(d => d.occupation_type))];
-    d3.select("#occupationFilter")
-      .selectAll("option")
-      .data(occupations)
-      .enter()
-      .append("option")
-      .text(d => d);
-
-    // TIMING FIX: Explicitly call render here inside the success loop so it fires after the data array is filled!
-    renderScene1();
-}).catch(function(error) {
-    d3.select("#scene-description")
-      .text("Error reading data.csv file. Make sure data.csv is fully uploaded in your root folder.")
-      .style("color", "red");
-    console.error("CSV Loading Error: ", error);
 });
 
 function drawCanvas() {
     d3.select("#chart").html("");
     
-    // TIMING FIX: If data isn't quite parsed yet on the first background tick, safely bypass axis calculations
     if (!allData || allData.length === 0) {
         return { svg: d3.select("#chart").append("svg"), yScale: null };
     }
@@ -122,7 +124,7 @@ function drawCanvas() {
 
 function renderScene1() {
     const { svg, yScale } = drawCanvas();
-    if (!yScale) return; // Safely skip if the data is evaluating
+    if (!yScale) return; 
 
     d3.select("#scene-description").text("Scene 1: Overworking heavily strains your longevity. Notice the downward trajectory as average daily work hours scale past 9 hours.");
     d3.select("#explore-controls").style("display", "none");
