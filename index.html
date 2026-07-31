@@ -22,7 +22,7 @@
 
 <div id="container">
     <h1 style="margin-bottom: 5px;">Habits of a Lifetime</h1>
-    <p id="scene-description" style="color: #555; min-height: 45px;">Preparing interactive dataset matrix from CSV...</p>
+    <p id="scene-description" style="color: #555; min-height: 45px;">Loading interactive dataset matrix from CSV...</p>
 
     <!-- Navigation Triggers -->
     <div style="margin-bottom: 20px;">
@@ -80,7 +80,7 @@ d3.csv("data.csv").then(function(loadedData) {
       .append("option")
       .text(d => d);
 
-    // Bootstrap first narrative scene initial render
+    // TIMING FIX: Explicitly call render here inside the success loop so it fires after the data array is filled!
     renderScene1();
 }).catch(function(error) {
     d3.select("#scene-description")
@@ -92,15 +92,17 @@ d3.csv("data.csv").then(function(loadedData) {
 function drawCanvas() {
     d3.select("#chart").html("");
     
+    // TIMING FIX: If data isn't quite parsed yet on the first background tick, safely bypass axis calculations
+    if (!allData || allData.length === 0) {
+        return { svg: d3.select("#chart").append("svg"), yScale: null };
+    }
+
     const svg = d3.select("#chart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // ASYNC GUARD: If data isn't loaded yet on first tick, drop out quietly to prevent crash text
-    if (!allData || allData.length === 0) return { svg, yScale: null };
 
     const yExtent = d3.extent(allData, d => d.age_at_death);
     const yScale = d3.scaleLinear()
@@ -120,7 +122,7 @@ function drawCanvas() {
 
 function renderScene1() {
     const { svg, yScale } = drawCanvas();
-    if (!yScale) return; // Prevent parsing if data array is empty on first frame tick
+    if (!yScale) return; // Safely skip if the data is evaluating
 
     d3.select("#scene-description").text("Scene 1: Overworking heavily strains your longevity. Notice the downward trajectory as average daily work hours scale past 9 hours.");
     d3.select("#explore-controls").style("display", "none");
