@@ -11,7 +11,6 @@
         .nav-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
         .nav-btn.active { background: #007bff; color: white; border-color: #0056b3; }
         
-        /* Fixed sidebar annotations block using pure HTML/CSS layout */
         #fixed-annotation-box {
             position: absolute;
             top: 160px;
@@ -33,13 +32,13 @@
 <body>
 
 <div id="container">
-    <h1 style="margin-bottom: 5px;">The Effect of Work & Sleep Hours</h1>
+    <h1 style="margin-bottom: 5px;">The Effects of Work & Sleep</h1>
     <p id="scene-description" style="color: #555; min-height: 45px;">Loading interactive dataset matrix from CSV...</p>
 
     <div style="margin-bottom: 20px;">
-        <button class="nav-btn active" id="btn1" onclick="changeScene(1)">1. Work vs Lifespan</button>
-        <button class="nav-btn" id="btn2" onclick="changeScene(2)">2. The Power of Sleep</button>
-        <button class="nav-btn" id="btn3" onclick="changeScene(3)">3. Explore Your Data</button>
+        <button class="nav-btn active" id="btn1" onclick="changeScene(1)">Work vs Lifespan</button>
+        <button class="nav-btn" id="btn2" onclick="changeScene(2)">Sleep vs Lifespan</button>
+        <button class="nav-btn" id="btn3" onclick="changeScene(3)">Explore Your Data</button>
     </div>
 
     <div id="explore-controls" class="controls" style="margin-bottom: 15px;">
@@ -47,7 +46,6 @@
         <select id="occupationFilter" onchange="updateExploration()" style="padding: 5px; border-radius: 4px;"></select>
     </div>
 
-    <!-- Fixed Annotation Display Component -->
     <div id="fixed-annotation-box">
         <div class="anno-title" id="anno-box-title"></div>
         <div class="anno-text" id="anno-box-text"></div>
@@ -62,8 +60,7 @@
 let allData = []; 
 let data = [];    
 let currentScene = 1;
-const margin = {top: 50, right: 260, bottom: 50, left: 60}; // Shifted right margin open for annotation box spacing
-const width = 900 - margin.left - margin.right;
+const margin = {top: 50, right: 260, bottom: 50, left: 60}; 
 const height = 450 - margin.top - margin.bottom;
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -134,7 +131,7 @@ function renderScene1() {
     const { svg, yScale } = drawCanvas();
     if (!yScale) return; 
 
-    d3.select("#scene-description").text("You can see the downward trajectory of age at death as average daily work hours scale past 9 hours, which shows how overworking decreases your longevity.");
+    d3.select("#scene-description").text("Extreme work hours lead to a younger age at death. The chart shows that when average daily work scales past 9 hours, your longevity decreases.");
     d3.select("#explore-controls").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
@@ -155,17 +152,16 @@ function renderScene1() {
        .duration(800)
        .attr("r", 3.5);
 
-    // Populate Sidebar Annotation Card for Scene 1
     d3.select("#fixed-annotation-box").style("display", "block");
-    d3.select("#anno-box-title").text("The Overwork Cliff");
-    d3.select("#anno-box-text").text("Data thresholds highlight that life expectancy trends drop off significantly once shifts climb past 9 hours daily.");
+    d3.select("#anno-box-title").text("The Overworkers");
+    d3.select("#anno-box-text").text("The data cluster shows how life expectancy lowers significantly once work passes 9 hours daily.");
 }
 
 function renderScene2() {
     const { svg, yScale } = drawCanvas();
     if (!yScale) return;
 
-    d3.select("#scene-description").text("The number of sleep hours that a person gets a night can significantly affect their age of death. People that hit 7 to 8 hours of sleep have the best longevity.");
+    d3.select("#scene-description").text("The number of sleep hours that a person gets a night can significantly affect their age at death. People that hit 7 to 8 hours of sleep achieve optimal longevity.");
     d3.select("#explore-controls").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_sleep_hours_per_day);
@@ -186,10 +182,9 @@ function renderScene2() {
        .duration(800)
        .attr("r", 3.5);
 
-    // Populate Sidebar Annotation Card for Scene 2
     d3.select("#fixed-annotation-box").style("display", "block");
     d3.select("#anno-box-title").text("The Recovery Zone");
-    d3.select("#anno-box-text").text("Survival rates peak heavily around the 7 to 8-hour marker, emphasizing the health value of systemic biological rest.");
+    d3.select("#anno-box-text").text("Survival rates peak around the 7 to 8-hour marker, emphasizing the value of long and consistent sleep.");
 }
 
 function renderScene3(filteredData = data) {
@@ -199,7 +194,6 @@ function renderScene3(filteredData = data) {
     d3.select("#scene-description").text("Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
     d3.select("#explore-controls").style("display", "block");
     
-    // Hide Sidebar Annotation Card on Free Exploration Slide
     d3.select("#fixed-annotation-box").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
