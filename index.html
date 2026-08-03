@@ -68,7 +68,7 @@
 let allData = []; 
 let data = [];    
 let currentScene = 1;
-const margin = {top: 50, right: 320, bottom: 50, left: 60}; // Shift right margin open to accommodate fixed narrative label panels
+const margin = {top: 50, right: 320, bottom: 50, left: 60}; 
 const width = 950 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function() {
             };
         });
 
-        // FIXED SUBSET: Reliable 20% sample allocation loop
+        // FIXED SUBSET: Pulls exactly every 5th row for a fixed, reliable 20% sample
         data = allData.filter((d, index) => index % 5 === 0);
 
         const occupations = ["All", ...new Set(allData.map(d => d.occupation_type))];
@@ -166,37 +166,6 @@ function renderScene1() {
        .attr("r", 3.5);
 
     // FIXED NATIVE ANNOTATION DISPLAY POPULATION
-    d3.select("#fixed-annotation-box").style("display", "block");
-    d3.select("#anno-box-title").text("The Overwork Cliff");
-    d3.select("#anno-box-text").text("Notice how survival metrics scale down drastically as occupational workloads cross the 9+ hour threshold daily on this scatterplot landscape.");
-}
-
-function renderScene2() {
-    const { svg, yScale } = drawCanvas();
-    if (!yScale) return;
-
-    d3.select("#scene-description").text("Scene 2: Conversely, systemic biological rest repairs the body. Individuals hitting the 7 to 8-hour sleep sweet spot sustain optimized longevity.").style("color", "#555");
-    d3.select("#explore-controls").style("display", "none");
-
-    const xExtent = d3.extent(allData, d => d.avg_sleep_hours_per_day);
-    const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
-    svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
-    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
-
-    svg.selectAll("circle")
-       .data(data)
-       .enter()
-       .append("circle")
-       .attr("cx", d => xScale(d.avg_sleep_hours_per_day + d.xJitter))
-       .attr("cy", d => yScale(d.age_at_death))
-       .attr("r", 0)
-       .attr("fill", "#6fa8dc")
-       .attr("opacity", 0.75)
-       .transition()
-       .duration(800)
-       .attr("r", 3.5);
-
-        // FIXED NATIVE ANNOTATION DISPLAY POPULATION
     d3.select("#fixed-annotation-box").style("display", "block");
     d3.select("#anno-box-title").text("The Overwork Cliff");
     d3.select("#anno-box-text").text("Notice how survival metrics scale down drastically as occupational workloads cross the 9+ hour threshold daily on this scatterplot landscape.");
