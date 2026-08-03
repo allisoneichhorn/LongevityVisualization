@@ -5,18 +5,27 @@
     <title>Work-Life Balance & Longevity Narrative</title>
     <!-- Prevent standard tab icon 404 logs -->
     <link rel="icon" href="data:,">
-    <!-- Main D3 Library Only - Updated to ultra-reliable jsDelivr CDN -->
+    <!-- Main D3 Library Only - Version Locked for High Performance -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
-        #container { max-width: 950px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #container { max-width: 950px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; }
         .nav-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
         .nav-btn.active { background: #007bff; color: white; border-color: #0056b3; }
         
-        /* Styled classes for our fixed native SVG annotations */
-        .fixed-anno-title { font-weight: bold; fill: #1f4068; font-size: 13px; }
-        .fixed-anno-label { fill: #444; font-size: 11px; }
-        .fixed-anno-line { stroke: #1f4068; stroke-width: 1.5px; stroke-dasharray: 3,3; }
+        /* Clean HTML Container for Fixed Right-Side Narrative Labels */
+        #fixed-annotation-box {
+            position: absolute;
+            top: 150px;
+            right: 40px;
+            width: 260px;
+            padding: 15px;
+            background: #fff;
+            border-left: 3px dashed #1f4068;
+            display: none;
+        }
+        .anno-title { font-weight: bold; color: #1f4068; font-size: 14px; margin-bottom: 6px; }
+        .anno-text { color: #444; font-size: 12px; line-height: 1.4; }
 
         .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10; }
         .controls { margin-top: 15px; display: none; }
@@ -42,6 +51,12 @@
         <select id="occupationFilter" onchange="updateExploration()" style="padding: 5px; border-radius: 4px;"></select>
     </div>
 
+    <!-- The Fixed Annotation Display Box -->
+    <div id="fixed-annotation-box">
+        <div class="anno-title" id="anno-box-title"></div>
+        <div class="anno-text" id="anno-box-text"></div>
+    </div>
+
     <!-- The Visualization SVG -->
     <div id="chart"></div>
 </div>
@@ -53,8 +68,8 @@
 let allData = []; 
 let data = [];    
 let currentScene = 1;
-const margin = {top: 50, right: 150, bottom: 50, left: 60}; 
-const width = 900 - margin.left - margin.right;
+const margin = {top: 50, right: 320, bottom: 50, left: 60}; // Shift right margin open to accommodate fixed narrative label panels
+const width = 950 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -150,27 +165,10 @@ function renderScene1() {
        .duration(800)
        .attr("r", 3.5);
 
-    // FIXED NATIVE ANNOTATION: Drawn at crisp, hardcoded pixel values on the right-hand canvas area
-    const annoG = svg.append("g").attr("transform", "translate(420, 40)");
-    
-    annoG.append("line")
-         .attr("class", "fixed-anno-line")
-         .attr("x1", 0).attr("y1", 20)
-         .attr("x2", 150).attr("y2", 20);
-
-    annoG.append("text")
-         .attr("class", "fixed-anno-title")
-         .attr("x", 0).attr("y", 0)
-         .text("The Overwork Cliff");
-
-    annoG.append("text")
-         .attr("class", "fixed-anno-label")
-         .attr("x", 0).attr("y", 40)
-         .text("Notice how survival metrics scale down drastically");
-    annoG.append("text")
-         .attr("class", "fixed-anno-label")
-         .attr("x", 0).attr("y", 55)
-         .text("as occupational workloads cross the 9+ hour threshold daily.");
+    // FIXED NATIVE ANNOTATION DISPLAY POPULATION
+    d3.select("#fixed-annotation-box").style("display", "block");
+    d3.select("#anno-box-title").text("The Overwork Cliff");
+    d3.select("#anno-box-text").text("Notice how survival metrics scale down drastically as occupational workloads cross the 9+ hour threshold daily on this scatterplot landscape.");
 }
 
 function renderScene2() {
@@ -198,27 +196,41 @@ function renderScene2() {
        .duration(800)
        .attr("r", 3.5);
 
-    // FIXED NATIVE ANNOTATION: Clean, reliable right-aligned indicator panel for Scene 2
-    const annoG = svg.append("g").attr("transform", "translate(420, 40)");
-    
-    annoG.append("line")
-         .attr("class", "fixed-anno-line")
-         .attr("x1", 0).attr("y1", 20)
-         .attr("x2", 150).attr("y2", 20);
+        // FIXED NATIVE ANNOTATION DISPLAY POPULATION
+    d3.select("#fixed-annotation-box").style("display", "block");
+    d3.select("#anno-box-title").text("The Overwork Cliff");
+    d3.select("#anno-box-text").text("Notice how survival metrics scale down drastically as occupational workloads cross the 9+ hour threshold daily on this scatterplot landscape.");
+}
 
-    annoG.append("text")
-         .attr("class", "fixed-anno-title")
-         .attr("x", 0).attr("y", 0)
-         .text("The Recovery Sweet Spot");
+function renderScene2() {
+    const { svg, yScale } = drawCanvas();
+    if (!yScale) return;
 
-    annoG.append("text")
-         .attr("class", "fixed-anno-label")
-         .attr("x", 0).attr("y", 40)
-         .text("Lifespan optimizes dramatically around the 7 to 8-hour");
-    annoG.append("text")
-         .attr("class", "fixed-anno-label")
-         .attr("x", 0).attr("y", 55)
-         .text("sleep cluster, showcasing the physical benefits of restorative cycles.");
+    d3.select("#scene-description").text("Scene 2: Conversely, systemic biological rest repairs the body. Individuals hitting the 7 to 8-hour sleep sweet spot sustain optimized longevity.").style("color", "#555");
+    d3.select("#explore-controls").style("display", "none");
+
+    const xExtent = d3.extent(allData, d => d.avg_sleep_hours_per_day);
+    const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
+    svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
+    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
+
+    svg.selectAll("circle")
+       .data(data)
+       .enter()
+       .append("circle")
+       .attr("cx", d => xScale(d.avg_sleep_hours_per_day + d.xJitter))
+       .attr("cy", d => yScale(d.age_at_death))
+       .attr("r", 0)
+       .attr("fill", "#6fa8dc")
+       .attr("opacity", 0.75)
+       .transition()
+       .duration(800)
+       .attr("r", 3.5);
+
+    // FIXED NATIVE ANNOTATION DISPLAY POPULATION
+    d3.select("#fixed-annotation-box").style("display", "block");
+    d3.select("#anno-box-title").text("The Recovery Sweet Spot");
+    d3.select("#anno-box-text").text("Lifespan optimizes dramatically right around the 7 to 8-hour sleep cluster, showcasing the direct biological benefits of daily restorative rest cycles.");
 }
 
 function renderScene3(filteredData = data) {
@@ -227,13 +239,66 @@ function renderScene3(filteredData = data) {
 
     d3.select("#scene-description").text("Scene 3: Free Exploration. Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.").style("color", "#555");
     d3.select("#explore-controls").style("display", "block");
+    
+    // Hide annotations on slide 3 to clear the room for free user exploration parameters
+    d3.select("#fixed-annotation-box").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
-    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");const tooltip = d3.select("#tooltip");
-    svg.selectAll("circle").data(filteredData).enter().append("circle").attr("cx", d => xScale(d.avg_work_hours_per_day + d.xJitter)).attr("cy", d => yScale(d.age_at_death)).attr("r", 0).attr("fill", d => d.gender === "Male" ? "#3d85c6" : "#c27ba0").attr("opacity", 0.8).style("cursor", "pointer").on("mouseover", function(event, d) {tooltip.style("opacity", 1).html(<strong>ID:</strong> ${d.id}<br/> <strong>Gender:</strong> ${d.gender}<br/> <strong>Job:</strong> ${d.occupation_type}<br/> <strong>Work Hours:</strong> ${d.avg_work_hours_per_day}h<br/> <strong>Sleep Hours:</strong> ${d.avg_sleep_hours_per_day}h<br/> <strong>Age at Death:</strong> ${d.age_at_death}).style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 28) + "px");}).on("mouseout", () => tooltip.style("opacity", 0)).transition().duration(600).attr("r", 4.5);}
-        
-function changeScene(sceneNum) {currentScene = sceneNum;d3.selectAll(".nav-btn").each(function() {this.classList.remove("active");});const targetBtn = d3.select(#btn${sceneNum}).node();if(targetBtn) targetBtn.classList.add("active");if(sceneNum === 1) renderScene1();else if(sceneNum === 2) renderScene2();else if(sceneNum === 3) renderScene3();}
+    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
+
+    const tooltip = d3.select("#tooltip");
+
+    svg.selectAll("circle")
+       .data(filteredData)
+       .enter()
+       .append("circle")
+       .attr("cx", d => xScale(d.avg_work_hours_per_day + d.xJitter))
+       .attr("cy", d => yScale(d.age_at_death))
+       .attr("r", 0)
+       .attr("fill", d => d.gender === "Male" ? "#3d85c6" : "#c27ba0")
+       .attr("opacity", 0.8)
+       .style("cursor", "pointer")
+       .on("mouseover", function(event, d) {
+           tooltip.style("opacity", 1)
+                  .html(`<strong>ID:</strong> ${d.id}<br/>
+                         <strong>Gender:</strong> ${d.gender}<br/>
+                         <strong>Job:</strong> ${d.occupation_type}<br/>
+                         <strong>Work Hours:</strong> ${d.avg_work_hours_per_day}h<br/>
+                         <strong>Sleep Hours:</strong> ${d.avg_sleep_hours_per_day}h<br/>
+                         <strong>Age at Death:</strong> ${d.age_at_death}`)
+                  .style("left", (event.pageX + 12) + "px")
+                  .style("top", (event.pageY - 28) + "px");
+       })
+       .on("mouseout", () => tooltip.style("opacity", 0))
+       .transition()
+       .duration(600)
+       .attr("r", 4.5); 
+}
+
+function changeScene(sceneNum) {
+    currentScene = sceneNum;
+    d3.selectAll(".nav-btn").each(function() {
+        this.classList.remove("active");
+    });
     
-function updateExploration() {const selectedJob = d3.select("#occupationFilter").property("value");const filtered = selectedJob === "All" ? data : data.filter(d => d.occupation_type === selectedJob);renderScene3(filtered);}
+    const targetBtn = d3.select(`#btn${sceneNum}`).node();
+    if(targetBtn) targetBtn.classList.add("active");
+    
+    if(sceneNum === 1) renderScene1();
+    else if(sceneNum === 2) renderScene2();
+    else if(sceneNum === 3) renderScene3();
+}
+
+function updateExploration() {
+    const selectedJob = d3.select("#occupationFilter").property("value");
+    const filtered = selectedJob === "All" ? data : data.filter(d => d.occupation_type === selectedJob);
+    renderScene3(filtered);
+}
+</script>
+</body>
+</html>
+
+
+
