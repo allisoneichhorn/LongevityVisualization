@@ -5,16 +5,26 @@
     <title>Work Life Balance & Longevity</title>
     <link rel="icon" href="data:,">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-    <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
-        #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; }
         .nav-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
         .nav-btn.active { background: #007bff; color: white; border-color: #0056b3; }
-        .annotation-note-title { font-weight: bold; fill: #1f4068; }
-        .annotation-note-label { fill: #333; font-size: 12px; }
-        .annotation path { stroke: #1f4068; fill: none; stroke-width: 1.5px; }
-        .annotation text { fill: #333; }
+        
+        /* Fixed sidebar annotations block using pure HTML/CSS layout */
+        #fixed-annotation-box {
+            position: absolute;
+            top: 160px;
+            right: 40px;
+            width: 200px;
+            padding: 12px;
+            background: #fff;
+            border-left: 3px dashed #1f4068;
+            display: none;
+        }
+        .anno-title { font-weight: bold; color: #1f4068; font-size: 13px; margin-bottom: 4px; }
+        .anno-text { color: #444; font-size: 11px; line-height: 1.4; }
+
         .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10; }
         .controls { margin-top: 15px; display: none; }
         circle { transition: fill 0.2s, opacity 0.2s; }
@@ -37,6 +47,12 @@
         <select id="occupationFilter" onchange="updateExploration()" style="padding: 5px; border-radius: 4px;"></select>
     </div>
 
+    <!-- Fixed Annotation Display Component -->
+    <div id="fixed-annotation-box">
+        <div class="anno-title" id="anno-box-title"></div>
+        <div class="anno-text" id="anno-box-text"></div>
+    </div>
+
     <div id="chart"></div>
 </div>
 
@@ -46,8 +62,8 @@
 let allData = []; 
 let data = [];    
 let currentScene = 1;
-const margin = {top: 50, right: 50, bottom: 50, left: 60};
-const width = 800 - margin.left - margin.right;
+const margin = {top: 50, right: 260, bottom: 50, left: 60}; // Shifted right margin open for annotation box spacing
+const width = 900 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -114,7 +130,6 @@ function drawCanvas() {
 
     return { svg, yScale };
 }
-
 function renderScene1() {
     const { svg, yScale } = drawCanvas();
     if (!yScale) return; 
@@ -140,17 +155,10 @@ function renderScene1() {
        .duration(800)
        .attr("r", 3.5);
 
-    const maxWork = d3.max(data, d => d.avg_work_hours_per_day);
-    const extremePoint = data.find(d => d.avg_work_hours_per_day === maxWork);
-    
-    if (extremePoint) {
-        const annotations = [{
-            note: { title: "The Overwork Cliff" },
-            x: xScale(extremePoint.avg_work_hours_per_day + extremePoint.xJitter), y: yScale(extremePoint.age_at_death), dx: -45, dy: -30
-        }];
-        const makeAnnotations = d3.annotation().annotations(annotations);
-        svg.append("g").call(makeAnnotations);
-    }
+    // Populate Sidebar Annotation Card for Scene 1
+    d3.select("#fixed-annotation-box").style("display", "block");
+    d3.select("#anno-box-title").text("The Overwork Cliff");
+    d3.select("#anno-box-text").text("Data thresholds highlight that life expectancy trends drop off significantly once shifts climb past 9 hours daily.");
 }
 
 function renderScene2() {
@@ -178,17 +186,10 @@ function renderScene2() {
        .duration(800)
        .attr("r", 3.5);
 
-    const maxSleep = d3.max(data, d => d.avg_sleep_hours_per_day);
-    const optimalPoint = data.find(d => d.avg_sleep_hours_per_day === maxSleep);
-
-    if (optimalPoint) {
-        const annotations = [{
-            note: { title: "The Recovery Zone" },
-            x: xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter), y: yScale(optimalPoint.age_at_death), dx: -50, dy: 30
-        }];
-        const makeAnnotations = d3.annotation().annotations(annotations);
-        svg.append("g").call(makeAnnotations);
-    }
+    // Populate Sidebar Annotation Card for Scene 2
+    d3.select("#fixed-annotation-box").style("display", "block");
+    d3.select("#anno-box-title").text("The Recovery Zone");
+    d3.select("#anno-box-text").text("Survival rates peak heavily around the 7 to 8-hour marker, emphasizing the health value of systemic biological rest.");
 }
 
 function renderScene3(filteredData = data) {
@@ -197,6 +198,9 @@ function renderScene3(filteredData = data) {
 
     d3.select("#scene-description").text("Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
     d3.select("#explore-controls").style("display", "block");
+    
+    // Hide Sidebar Annotation Card on Free Exploration Slide
+    d3.select("#fixed-annotation-box").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
@@ -237,7 +241,9 @@ function changeScene(sceneNum) {
     d3.selectAll(".nav-btn").each(function() {
         this.classList.remove("active");
     });
-    d3.select(`#btn${sceneNum}`).node().classList.add("active");
+    
+    const targetBtn = d3.select(`#btn${sceneNum}`).node();
+    if(targetBtn) targetBtn.classList.add("active");
     
     if(sceneNum === 1) renderScene1();
     else if(sceneNum === 2) renderScene2();
@@ -252,3 +258,4 @@ function updateExploration() {
 </script>
 </body>
 </html>
+
