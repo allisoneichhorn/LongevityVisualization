@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <title>Work Life Balance & Longevity</title>
     <link rel="icon" href="data:,">
-    <!-- FIXED: Switched down/blocked Cloudflare link to ultra-reliable jsDelivr mirror -->
+    <!-- Allowed Libraries Only -->
     <script src="https://jsdelivr.net"></script>
+    <script src="https://unpkg.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
         #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -46,7 +47,7 @@
 let allData = []; 
 let data = [];    
 let currentScene = 1;
-const margin = {top: 50, right: 50, bottom: 50, left: 60};
+const margin = {top: 50, right: 120, bottom: 50, left: 60};
 const width = 800 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
@@ -79,8 +80,8 @@ document.addEventListener("DOMContentLoaded", function() {
         renderScene1();
     }).catch(function(error) {
         d3.select("#scene-description")
-          .text("")
-          .style("color", "black");
+          .text("Error loading data.csv file.")
+          .style("color", "red");
         console.error("CSV Loading Error: ", error);
     });
 });
@@ -139,6 +140,22 @@ function renderScene1() {
        .transition()
        .duration(800)
        .attr("r", 3.5);
+
+    const maxWork = d3.max(data, d => d.avg_work_hours_per_day);
+    const extremePoint = data.find(d => d.avg_work_hours_per_day === maxWork);
+    
+    if (extremePoint) {
+        const annotations = [{
+            note: { title: "The Overwork Cliff" },
+            x: xScale(extremePoint.avg_work_hours_per_day + extremePoint.xJitter), 
+            y: yScale(extremePoint.age_at_death), 
+            dx: -45, 
+            dy: -30,
+            type: d3.annotationLabel
+        }];
+        const makeAnnotations = d3.annotation().annotations(annotations);
+        svg.append("g").call(makeAnnotations);
+    }
 }
 
 function renderScene2() {
@@ -165,6 +182,22 @@ function renderScene2() {
        .transition()
        .duration(800)
        .attr("r", 3.5);
+
+    const maxSleep = d3.max(data, d => d.avg_sleep_hours_per_day);
+    const optimalPoint = data.find(d => d.avg_sleep_hours_per_day === maxSleep);
+
+    if (optimalPoint) {
+        const annotations = [{
+            note: { title: "The Recovery Zone" },
+            x: xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter), 
+            y: yScale(optimalPoint.age_at_death), 
+            dx: -50, 
+            dy: 30,
+            type: d3.annotationLabel
+        }];
+        const makeAnnotations = d3.annotation().annotations(annotations);
+        svg.append("g").call(makeAnnotations);
+    }
 }
 
 function renderScene3(filteredData = data) {
@@ -175,7 +208,7 @@ function renderScene3(filteredData = data) {
     d3.select("#explore-controls").style("display", "block");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
-    const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
+    const xScale = d3.scaleLinear().domain([xExtent - 1, xExtent + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
 
