@@ -5,8 +5,8 @@
     <title>Work-Life Balance & Longevity Narrative</title>
     <!-- Prevent standard tab icon 404 logs -->
     <link rel="icon" href="data:,">
-    <!-- Main D3 Library Only -->
-    <script src="https://cloudflare.com"></script>
+    <!-- Main D3 Library Only - Updated to ultra-reliable jsDelivr CDN -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
         #container { max-width: 950px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -231,100 +231,9 @@ function renderScene3(filteredData = data) {
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
-    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
-
-    svg.selectAll("circle")
-       .data(data)
-       .enter()
-       .append("circle")
-       .attr("cx", d => xScale(d.avg_sleep_hours_per_day + d.xJitter))
-       .attr("cy", d => yScale(d.age_at_death))
-       .attr("r", 0)
-       .attr("fill", "#6fa8dc")
-       .attr("opacity", 0.75)
-       .transition()
-       .duration(800)
-       .attr("r", 3.5);
-
-    const maxSleep = d3.max(data, d => d.avg_sleep_hours_per_day);
-    const optimalPoint = data.find(d => d.avg_sleep_hours_per_day === maxSleep);
-
-    if (optimalPoint) {
-        const annotations = [{
-            note: { 
-                title: "The Recovery Zone", 
-                label: "Adequate recovery cycles consistently align with top data thresholds.",
-                wrap: 160 
-            },
-            x: xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter), 
-            y: yScale(optimalPoint.age_at_death), 
-            dx: 40, 
-            dy: 40,
-            type: d3.annotationLabel
-        }];
-        const makeAnnotations = d3.annotation().annotations(annotations);
-        svg.append("g").attr("class", "annotation-group").call(makeAnnotations);
-    }
-}
-
-function renderScene3(filteredData = data) {
-    const { svg, yScale } = drawCanvas();
-    if (!yScale) return;
-
-    d3.select("#scene-description").text("Scene 3: Free Exploration. Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.").style("color", "#555");
-    d3.select("#explore-controls").style("display", "block");
-
-    const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
-    const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
-    svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
-    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
-
-    const tooltip = d3.select("#tooltip");
-
-    svg.selectAll("circle")
-       .data(filteredData)
-       .enter()
-       .append("circle")
-       .attr("cx", d => xScale(d.avg_work_hours_per_day + d.xJitter))
-       .attr("cy", d => yScale(d.age_at_death))
-       .attr("r", 0)
-       .attr("fill", d => d.gender === "Male" ? "#3d85c6" : "#c27ba0")
-       .attr("opacity", 0.8)
-       .style("cursor", "pointer")
-       .on("mouseover", function(event, d) {
-           tooltip.style("opacity", 1)
-                  .html(`<strong>ID:</strong> ${d.id}<br/>
-                         <strong>Gender:</strong> ${d.gender}<br/>
-                         <strong>Job:</strong> ${d.occupation_type}<br/>
-                         <strong>Work Hours:</strong> ${d.avg_work_hours_per_day}h<br/>
-                         <strong>Sleep Hours:</strong> ${d.avg_sleep_hours_per_day}h<br/>
-                         <strong>Age at Death:</strong> ${d.age_at_death}`)
-                  .style("left", (event.pageX + 12) + "px")
-                  .style("top", (event.pageY - 28) + "px");
-       })
-       .on("mouseout", () => tooltip.style("opacity", 0))
-       .transition()
-       .duration(600)
-       .attr("r", 4.5); 
-}
-
-function changeScene(sceneNum) {
-    currentScene = sceneNum;
-    d3.selectAll(".nav-btn").each(function() {
-        this.classList.remove("active");
-    });
-    d3.select(`#btn${sceneNum}`).node().classList.add("active");
+    svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");const tooltip = d3.select("#tooltip");
+    svg.selectAll("circle").data(filteredData).enter().append("circle").attr("cx", d => xScale(d.avg_work_hours_per_day + d.xJitter)).attr("cy", d => yScale(d.age_at_death)).attr("r", 0).attr("fill", d => d.gender === "Male" ? "#3d85c6" : "#c27ba0").attr("opacity", 0.8).style("cursor", "pointer").on("mouseover", function(event, d) {tooltip.style("opacity", 1).html(<strong>ID:</strong> ${d.id}<br/> <strong>Gender:</strong> ${d.gender}<br/> <strong>Job:</strong> ${d.occupation_type}<br/> <strong>Work Hours:</strong> ${d.avg_work_hours_per_day}h<br/> <strong>Sleep Hours:</strong> ${d.avg_sleep_hours_per_day}h<br/> <strong>Age at Death:</strong> ${d.age_at_death}).style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 28) + "px");}).on("mouseout", () => tooltip.style("opacity", 0)).transition().duration(600).attr("r", 4.5);}
+        
+function changeScene(sceneNum) {currentScene = sceneNum;d3.selectAll(".nav-btn").each(function() {this.classList.remove("active");});const targetBtn = d3.select(#btn${sceneNum}).node();if(targetBtn) targetBtn.classList.add("active");if(sceneNum === 1) renderScene1();else if(sceneNum === 2) renderScene2();else if(sceneNum === 3) renderScene3();}
     
-    if(sceneNum === 1) renderScene1();
-    else if(sceneNum === 2) renderScene2();
-    else if(sceneNum === 3) renderScene3();
-}
-
-function updateExploration() {
-    const selectedJob = d3.select("#occupationFilter").property("value");
-    const filtered = selectedJob === "All" ? data : data.filter(d => d.occupation_type === selectedJob);
-    renderScene3(filtered);
-}
-</script>
-</body>
-</html>
+function updateExploration() {const selectedJob = d3.select("#occupationFilter").property("value");const filtered = selectedJob === "All" ? data : data.filter(d => d.occupation_type === selectedJob);renderScene3(filtered);}
