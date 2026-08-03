@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Work-Life Balance & Longevity Narrative</title>
+    <title>Work Life Balance & Longevity</title>
     <link rel="icon" href="data:,">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
     <script src="https://cloudflare.com"></script>
@@ -11,8 +11,10 @@
         #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
         .nav-btn.active { background: #007bff; color: white; border-color: #0056b3; }
-        .annotation-note-title { font-weight: bold; fill: #d9534f; }
+        .annotation-note-title { font-weight: bold; fill: #1f4068; }
         .annotation-note-label { fill: #333; font-size: 12px; }
+        .annotation path { stroke: #1f4068; fill: none; stroke-width: 1.5px; }
+        .annotation text { fill: #333; }
         .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10; }
         .controls { margin-top: 15px; display: none; }
         circle { transition: fill 0.2s, opacity 0.2s; }
@@ -21,7 +23,7 @@
 <body>
 
 <div id="container">
-    <h1 style="margin-bottom: 5px;">Habits of a Lifetime</h1>
+    <h1 style="margin-bottom: 5px;">The Effect of Work & Sleep Hours</h1>
     <p id="scene-description" style="color: #555; min-height: 45px;">Loading interactive dataset matrix from CSV...</p>
 
     <div style="margin-bottom: 20px;">
@@ -77,8 +79,8 @@ document.addEventListener("DOMContentLoaded", function() {
         renderScene1();
     }).catch(function(error) {
         d3.select("#scene-description")
-          .text("Error reading data.csv file. Verify its location in your root folder layout.")
-          .style("color", "red");
+          .text("")
+          .style("color", "black");
         console.error("CSV Loading Error: ", error);
     });
 });
@@ -117,7 +119,7 @@ function renderScene1() {
     const { svg, yScale } = drawCanvas();
     if (!yScale) return; 
 
-    d3.select("#scene-description").text("Scene 1: Overworking heavily strains your longevity. Notice the downward trajectory as average daily work hours scale past 9 hours.");
+    d3.select("#scene-description").text("You can see the downward trajectory of age at death as average daily work hours scale past 9 hours, which shows how overworking decreases your longevity.");
     d3.select("#explore-controls").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
@@ -143,7 +145,7 @@ function renderScene1() {
     
     if (extremePoint) {
         const annotations = [{
-            note: { title: "The Overwork Cliff", label: "Consistently elevated occupational shifts map directly to decreased lifespan values." },
+            note: { title: "The Overwork Cliff" },
             x: xScale(extremePoint.avg_work_hours_per_day + extremePoint.xJitter), y: yScale(extremePoint.age_at_death), dx: -45, dy: -30
         }];
         const makeAnnotations = d3.annotation().annotations(annotations);
@@ -155,7 +157,7 @@ function renderScene2() {
     const { svg, yScale } = drawCanvas();
     if (!yScale) return;
 
-    d3.select("#scene-description").text("Scene 2: Conversely, systemic biological rest repairs the body. Individuals hitting the 7 to 8-hour sleep sweet spot sustain optimized longevity.");
+    d3.select("#scene-description").text("The number of sleep hours that a person gets a night can significantly affect their age of death. People that hit 7 to 8 hours of sleep have the best longevity.");
     d3.select("#explore-controls").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_sleep_hours_per_day);
@@ -181,7 +183,7 @@ function renderScene2() {
 
     if (optimalPoint) {
         const annotations = [{
-            note: { title: "The Recovery Zone", label: "Adequate recovery cycles consistently align with top data thresholds." },
+            note: { title: "The Recovery Zone" },
             x: xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter), y: yScale(optimalPoint.age_at_death), dx: -50, dy: 30
         }];
         const makeAnnotations = d3.annotation().annotations(annotations);
@@ -193,7 +195,7 @@ function renderScene3(filteredData = data) {
     const { svg, yScale } = drawCanvas();
     if (!yScale) return;
 
-    d3.select("#scene-description").text("Scene 3: Free Exploration. Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
+    d3.select("#scene-description").text("Use the dropdown tool to filter by occupation type. Hover over individual data points to reveal details.");
     d3.select("#explore-controls").style("display", "block");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
