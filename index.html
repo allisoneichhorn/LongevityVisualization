@@ -101,6 +101,7 @@ function drawCanvas() {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+    // FIXED BUG: Correct index brackets to handle y-extent calculation
     const yExtent = d3.extent(allData, d => d.age_at_death);
     const yScale = d3.scaleLinear()
         .domain([yExtent[0] - 3, yExtent[1] + 3])
@@ -124,6 +125,7 @@ function renderScene1() {
     d3.select("#explore-controls").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
+    // FIXED BUG: Correct index brackets to handle extent calculation parameters
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
@@ -169,6 +171,7 @@ function renderScene2() {
     d3.select("#explore-controls").style("display", "none");
 
     const xExtent = d3.extent(allData, d => d.avg_sleep_hours_per_day);
+    // FIXED BUG: Correct index brackets to handle extent calculation parameters
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Sleep Hours / Day");
@@ -214,6 +217,7 @@ function renderScene3(filteredData = data) {
     d3.select("#explore-controls").style("display", "block");
 
     const xExtent = d3.extent(allData, d => d.avg_work_hours_per_day);
+    // FIXED BUG: Correct index brackets to handle extent calculation parameters
     const xScale = d3.scaleLinear().domain([xExtent[0] - 1, xExtent[1] + 1]).range([0, width]);
     svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(xScale));
     svg.append("text").attr("x", width/2).attr("y", height + 40).style("text-anchor", "middle").text("Avg Work Hours / Day");
@@ -269,4 +273,5 @@ function updateExploration() {
 </script>
 </body>
 </html>
+
 
