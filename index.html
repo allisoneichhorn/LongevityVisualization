@@ -4,19 +4,16 @@
     <meta charset="UTF-8">
     <title>Work Life Balance & Longevity</title>
     <link rel="icon" href="data:,">
-    <!-- Main D3 Library Only -->
     <script src="https://cloudflare.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
         #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-btn { padding: 10px 20px; margin-right: 10px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
         .nav-btn.active { background: #007bff; color: white; border-color: #0056b3; }
-        
-        /* Styled classes for clean, native text callout labels */
-        .native-anno-title { font-weight: bold; fill: #1f4068; font-size: 13px; }
-        .native-anno-label { fill: #444; font-size: 11px; }
-        .native-anno-line { stroke: #1f4068; stroke-width: 1.5px; stroke-dasharray: 3,3; }
-
+        .annotation-note-title { font-weight: bold; fill: #1f4068; }
+        .annotation-note-label { fill: #333; font-size: 12px; }
+        .annotation path { stroke: #1f4068; fill: none; stroke-width: 1.5px; }
+        .annotation text { fill: #333; }
         .tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 10; }
         .controls { margin-top: 15px; display: none; }
         circle { transition: fill 0.2s, opacity 0.2s; }
@@ -48,7 +45,7 @@
 let allData = []; 
 let data = [];    
 let currentScene = 1;
-const margin = {top: 50, right: 180, bottom: 50, left: 60}; // Shifted right margin slightly so text boxes do not truncate
+const margin = {top: 50, right: 50, bottom: 50, left: 60};
 const width = 800 - margin.left - margin.right;
 const height = 450 - margin.top - margin.bottom;
 
@@ -81,8 +78,8 @@ document.addEventListener("DOMContentLoaded", function() {
         renderScene1();
     }).catch(function(error) {
         d3.select("#scene-description")
-          .text("Error reading data.csv file. Verify its location in your root folder layout.")
-          .style("color", "red");
+          .text("")
+          .style("color", "black");
         console.error("CSV Loading Error: ", error);
     });
 });
@@ -141,26 +138,6 @@ function renderScene1() {
        .transition()
        .duration(800)
        .attr("r", 3.5);
-
-    const maxWork = d3.max(data, d => d.avg_work_hours_per_day);
-    const extremePoint = data.find(d => d.avg_work_hours_per_day === maxWork);
-    
-    if (extremePoint) {
-        // Native SVG Group container for text callouts
-        const targetX = xScale(extremePoint.avg_work_hours_per_day + extremePoint.xJitter);
-        const targetY = yScale(extremePoint.age_at_death);
-        const annoG = svg.append("g").attr("transform", `translate(${targetX - 100}, ${targetY - 50})`);
-        
-        annoG.append("line")
-             .attr("class", "native-anno-line")
-             .attr("x1", 50).attr("y1", 15)
-             .attr("x2", 100).attr("y2", 50);
-
-        annoG.append("text")
-             .attr("class", "native-anno-title")
-             .attr("x", 0).attr("y", 0)
-             .text("The Overwork Cliff");
-    }
 }
 
 function renderScene2() {
@@ -187,26 +164,6 @@ function renderScene2() {
        .transition()
        .duration(800)
        .attr("r", 3.5);
-
-    const maxSleep = d3.max(data, d => d.avg_sleep_hours_per_day);
-    const optimalPoint = data.find(d => d.avg_sleep_hours_per_day === maxSleep);
-
-    if (optimalPoint) {
-        // Native SVG Group container for text callouts
-        const targetX = xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter);
-        const targetY = yScale(optimalPoint.age_at_death);
-        const annoG = svg.append("g").attr("transform", `translate(${targetX + 30}, ${targetY - 10})`);
-        
-        annoG.append("line")
-             .attr("class", "native-anno-line")
-             .attr("x1", 0).attr("y1", 0)
-             .attr("x2", -30).attr("y2", 10);
-
-        annoG.append("text")
-             .attr("class", "native-anno-title")
-             .attr("x", 5).attr("y", 5)
-             .text("The Recovery Zone");
-    }
 }
 
 function renderScene3(filteredData = data) {
@@ -255,7 +212,9 @@ function changeScene(sceneNum) {
     d3.selectAll(".nav-btn").each(function() {
         this.classList.remove("active");
     });
-    d3.select(`#btn${sceneNum}`).node().classList.add("active");
+    
+    const targetBtn = d3.select(`#btn${sceneNum}`).node();
+    if(targetBtn) targetBtn.classList.add("active");
     
     if(sceneNum === 1) renderScene1();
     else if(sceneNum === 2) renderScene2();
