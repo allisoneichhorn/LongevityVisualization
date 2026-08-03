@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <title>Work Life Balance & Longevity</title>
     <link rel="icon" href="data:,">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <!-- Main D3 Library -->
     <script src="https://cloudflare.com"></script>
+    <!-- Official D3 Annotation Library Mirror -->
+    <script src="https://unpkg.com"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f9f9f9; }
         #container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -146,7 +148,11 @@ function renderScene1() {
     if (extremePoint) {
         const annotations = [{
             note: { title: "The Overwork Cliff" },
-            x: xScale(extremePoint.avg_work_hours_per_day + extremePoint.xJitter), y: yScale(extremePoint.age_at_death), dx: -45, dy: -30
+            x: xScale(extremePoint.avg_work_hours_per_day + extremePoint.xJitter), 
+            y: yScale(extremePoint.age_at_death), 
+            dx: -45, 
+            dy: -30,
+            type: d3.annotationLabel // Explicit label mapping parameter configuration
         }];
         const makeAnnotations = d3.annotation().annotations(annotations);
         svg.append("g").call(makeAnnotations);
@@ -184,7 +190,11 @@ function renderScene2() {
     if (optimalPoint) {
         const annotations = [{
             note: { title: "The Recovery Zone" },
-            x: xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter), y: yScale(optimalPoint.age_at_death), dx: -50, dy: 30
+            x: xScale(optimalPoint.avg_sleep_hours_per_day + optimalPoint.xJitter), 
+            y: yScale(optimalPoint.age_at_death), 
+            dx: -50, 
+            dy: 30,
+            type: d3.annotationLabel // Explicit label mapping parameter configuration
         }];
         const makeAnnotations = d3.annotation().annotations(annotations);
         svg.append("g").call(makeAnnotations);
